@@ -23,7 +23,7 @@ from model import Model
 from utils import create_input, evaluate, MODELS_PATH, EVAL_SCRIPT
 
 
-N_EPOCHS = 50  # number of epochs over the training set
+N_EPOCHS = 100  # number of epochs over the training set
 
 # Read parameters from command line
 optparser = optparse.OptionParser()

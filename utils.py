@@ -1,8 +1,10 @@
 import codecs
 import os
 import re
+import subprocess
 
 import numpy as np
+
 import theano
 
 
@@ -218,7 +220,7 @@ def create_input(data, parameters, add_label, singletons=None):
 
 
 def evaluate(parameters, f_eval, raw_sentences, parsed_sentences,
-             id_to_tag, dictionary_tags):
+             id_to_tag, dictionary_tags, corpus, epoch_n, iter_n):
     """
     Evaluate current model using CoNLL script.
     """
@@ -246,12 +248,16 @@ def evaluate(parameters, f_eval, raw_sentences, parsed_sentences,
         predictions.append("")
 
     # Write predictions to disk and run CoNLL script externally
-    eval_id = np.random.randint(1000000, 2000000)
-    output_path = os.path.join(eval_temp, "eval.%i.output" % eval_id)
-    scores_path = os.path.join(eval_temp, "eval.%i.scores" % eval_id)
+    # eval_id = np.random.randint(1000000, 2000000)
+    output_path = os.path.join(eval_temp,
+                               "eval.{}_{:.0f}k_{}.output".format(epoch_n, iter_n / 1000, corpus))
+    scores_path = os.path.join(eval_temp,
+                               "eval.{}_{:.0f}k_{}.scores".format(epoch_n, iter_n / 1000, corpus))
     with codecs.open(output_path, 'w', 'utf8') as f:
         f.write("\n".join(predictions))
-    os.system("%s < %s > %s" % (eval_script, output_path, scores_path))
+    # os.system("%s < %s > %s" % (eval_script, output_path, scores_path))
+    with open(output_path) as f_in, open(scores_path, 'w') as f_out:
+        subprocess.call(eval_script, stdin=f_in, stdout=f_out, shell=True)
 
     # CoNLL evaluation results
     eval_lines = [l.rstrip() for l in codecs.open(scores_path, 'r', 'utf8')]
@@ -263,12 +269,12 @@ def evaluate(parameters, f_eval, raw_sentences, parsed_sentences,
     # os.remove(scores_path)
 
     # Confusion matrix with accuracy for each tag
-    print ("{: >2}{: >7}{: >7}%s{: >9}" % ("{: >7}" * n_tags)).format(
+    print("{: >2}{: >7}{: >7}%s{: >9}" % ("{: >7}" * n_tags)).format(
         "ID", "NE", "Total",
         *([id_to_tag[i] for i in xrange(n_tags)] + ["Percent"])
     )
     for i in xrange(n_tags):
-        print ("{: >2}{: >7}{: >7}%s{: >9}" % ("{: >7}" * n_tags)).format(
+        print("{: >2}{: >7}{: >7}%s{: >9}" % ("{: >7}" * n_tags)).format(
             str(i), id_to_tag[i], str(count[i].sum()),
             *([count[i][j] for j in xrange(n_tags)] +
               ["%.3f" % (count[i][i] * 100. / max(1, count[i].sum()))])

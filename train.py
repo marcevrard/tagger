@@ -5,6 +5,8 @@ import optparse
 import os
 from collections import OrderedDict
 
+os.environ["OMP_NUM_THREADS"] = "1"
+
 import numpy as np
 
 import loader
@@ -12,6 +14,9 @@ from loader import (augment_with_pretrained, char_mapping, prepare_dataset,
                     tag_mapping, update_tag_scheme, word_mapping)
 from model import Model
 from utils import create_input, eval_script, eval_temp, evaluate, models_path
+
+
+N_EPOCHS = 50  # number of epochs over the training set
 
 
 # Read parameters from command line
@@ -200,12 +205,11 @@ if opts.reload:
 #
 singletons = set([word_to_id[k] for k, v
                   in dico_words_train.items() if v == 1])
-n_epochs = 100  # number of epochs over the training set
-freq_eval = 1000  # evaluate on dev every freq_eval steps
+freq_eval = len(train_data)  # 1000  # evaluate on dev every freq_eval steps
 best_dev = -np.inf
 best_test = -np.inf
 count = 0
-for epoch in xrange(n_epochs):
+for epoch in xrange(N_EPOCHS):
     epoch_costs = []
     print "Starting epoch %i..." % epoch
     for i, index in enumerate(np.random.permutation(len(train_data))):
@@ -217,9 +221,11 @@ for epoch in xrange(n_epochs):
             print "%i, cost average: %f" % (i, np.mean(epoch_costs[-50:]))
         if count % freq_eval == 0:
             dev_score = evaluate(parameters, f_eval, dev_sentences,
-                                 dev_data, id_to_tag, dico_tags)
+                                 dev_data, id_to_tag, dico_tags,
+                                 epoch_n=epoch, iter_n=count, corpus='dev')
             test_score = evaluate(parameters, f_eval, test_sentences,
-                                  test_data, id_to_tag, dico_tags)
+                                  test_data, id_to_tag, dico_tags,
+                                  epoch_n=epoch, iter_n=count, corpus='test')
             print "Score on dev: %.5f" % dev_score
             print "Score on test: %.5f" % test_score
             if dev_score > best_dev:

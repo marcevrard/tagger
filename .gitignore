@@ -99,3 +99,11 @@ ENV/
 
 # mypy
 .mypy_cache/
+
+# Perso
+evaluation/temp/
+evaluation/test_theano*
+evaluation/Old/
+*.vectors
+models/tag_scheme*
+tti_srv_data/

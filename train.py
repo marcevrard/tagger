@@ -214,7 +214,7 @@ if opts.reload:
 #
 singletons = set([word_to_id[k] for k, v
                   in dico_words_train.items() if v == 1])
-freq_eval = 1000 #len(train_data)  # 1000  # evaluate on dev every freq_eval steps
+freq_eval = len(train_data)  # 1000  # evaluate on dev every freq_eval steps
 best_dev = -np.inf
 best_test = -np.inf
 count = 0

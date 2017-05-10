@@ -1,8 +1,8 @@
+import codecs
 import os
 import re
-import codecs
-from utils import create_dico, create_mapping, zero_digits
-from utils import iob2, iob_iobes
+
+from utils import create_dico, create_mapping, iob2, iob_iobes, zero_digits
 
 
 def load_sentences(path, lower, zeros):

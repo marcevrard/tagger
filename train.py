@@ -1,5 +1,12 @@
 #!/usr/bin/env python
 
+'''
+./train.py --train dataset/eng.train --dev dataset/eng.testa --test dataset/eng.testb \
+    -p dataset/sskip.100.vectors
+'''
+
+# pylint: disable=invalid-name
+
 import itertools
 import optparse
 import os
@@ -160,11 +167,11 @@ update_tag_scheme(test_sentences, tag_scheme)
 if parameters['pre_emb']:
     dico_words_train = word_mapping(train_sentences, lower)[0]
     dico_words, word_to_id, id_to_word = augment_with_pretrained(
-        dico_words_train.copy(),
-        parameters['pre_emb'],
-        list(itertools.chain.from_iterable(
+        dictionary=dico_words_train.copy(),
+        ext_emb_path=parameters['pre_emb'],
+        words=list(itertools.chain.from_iterable(
             [[w[0] for w in s] for s in dev_sentences + test_sentences])
-        ) if not parameters['all_emb'] else None
+                  ) if not parameters['all_emb'] else None
     )
 else:
     dico_words, word_to_id, id_to_word = word_mapping(train_sentences, lower)

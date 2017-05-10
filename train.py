@@ -1,18 +1,18 @@
 #!/usr/bin/env python
 
-import os
-import numpy as np
-import optparse
 import itertools
+import optparse
+import os
 from collections import OrderedDict
-from utils import create_input
-import loader
 
-from utils import models_path, evaluate, eval_script, eval_temp
-from loader import word_mapping, char_mapping, tag_mapping
-from loader import update_tag_scheme, prepare_dataset
-from loader import augment_with_pretrained
+import numpy as np
+
+import loader
+from loader import (augment_with_pretrained, char_mapping, prepare_dataset,
+                    tag_mapping, update_tag_scheme, word_mapping)
 from model import Model
+from utils import create_input, eval_script, eval_temp, evaluate, models_path
+
 
 # Read parameters from command line
 optparser = optparse.OptionParser()

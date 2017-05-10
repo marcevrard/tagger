@@ -1,15 +1,16 @@
+import codecs
+import cPickle
 import os
 import re
+
 import numpy as np
 import scipy.io
 import theano
 import theano.tensor as T
-import codecs
-import cPickle
 
-from utils import shared, set_values, get_name
-from nn import HiddenLayer, EmbeddingLayer, DropoutLayer, LSTM, forward
+from nn import LSTM, DropoutLayer, EmbeddingLayer, HiddenLayer, forward
 from optimization import Optimization
+from utils import get_name, set_values, shared
 
 
 class Model(object):

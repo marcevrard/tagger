@@ -1,6 +1,7 @@
+import codecs
 import os
 import re
-import codecs
+
 import numpy as np
 import theano
 

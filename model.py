@@ -13,6 +13,9 @@ from optimization import Optimization
 from utils import get_name, set_values, shared
 
 
+EMBEDS_STD = 0.36554322
+
+
 class Model(object):
     """
     Network architecture.
@@ -121,12 +124,18 @@ class Model(object):
               pre_emb,
               crf,
               cap_dim,
+              scale,
               training=True,
-              **kwargs
-              ):
+              **kwargs):
         """
         Build the network.
         """
+        if scale == 0:
+            scale = EMBEDS_STD
+            print("SCALING OFF:", scale)
+        else:
+            print("SCALING ON!:", scale)
+
         # Training parameters
         n_words = len(self.id_to_word)
         n_chars = len(self.id_to_char)
@@ -171,8 +180,8 @@ class Model(object):
                     line = line.rstrip().split()
                     if len(line) == word_dim + 1:
                         pretrained[line[0]] = np.array(
-                            [float(x) for x in line[1:]]
-                        ).astype(np.float32)
+                            [float(x) for x in line[1:]]).astype(np.float32) * scale / EMBEDS_STD
+
                     else:
                         emb_invalid += 1
                 if emb_invalid > 0:

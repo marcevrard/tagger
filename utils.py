@@ -8,10 +8,8 @@ import numpy as np
 import theano
 
 
-models_path = "./models"
-eval_path = "./evaluation"
-eval_temp = os.path.join(eval_path, "temp")
-eval_script = os.path.join(eval_path, "conlleval")
+MODELS_PATH = "./models"
+EVAL_SCRIPT = './conlleval'
 
 
 def get_name(parameters):
@@ -247,17 +245,22 @@ def evaluate(parameters, f_eval, raw_sentences, parsed_sentences,
             count[y_real, y_pred] += 1
         predictions.append("")
 
+    eval_path = os.path.join(MODELS_PATH, get_name(parameters), "eval")
+
+    if not os.path.exists(eval_path):
+        os.makedirs(eval_path)
+
     # Write predictions to disk and run CoNLL script externally
     # eval_id = np.random.randint(1000000, 2000000)
-    output_path = os.path.join(eval_temp,
+    output_path = os.path.join(eval_path,
                                "eval.{}_{:.0f}k_{}.output".format(epoch_n, iter_n / 1000, corpus))
-    scores_path = os.path.join(eval_temp,
+    scores_path = os.path.join(eval_path,
                                "eval.{}_{:.0f}k_{}.scores".format(epoch_n, iter_n / 1000, corpus))
     with codecs.open(output_path, 'w', 'utf8') as f:
         f.write("\n".join(predictions))
-    # os.system("%s < %s > %s" % (eval_script, output_path, scores_path))
+    # os.system("%s < %s > %s" % (EVAL_SCRIPT, output_path, scores_path))
     with open(output_path) as f_in, open(scores_path, 'w') as f_out:
-        subprocess.call(eval_script, stdin=f_in, stdout=f_out, shell=True)
+        subprocess.call(EVAL_SCRIPT, stdin=f_in, stdout=f_out, shell=True)
 
     # CoNLL evaluation results
     eval_lines = [l.rstrip() for l in codecs.open(scores_path, 'r', 'utf8')]
@@ -271,19 +274,17 @@ def evaluate(parameters, f_eval, raw_sentences, parsed_sentences,
     # Confusion matrix with accuracy for each tag
     print("{: >2}{: >7}{: >7}%s{: >9}" % ("{: >7}" * n_tags)).format(
         "ID", "NE", "Total",
-        *([id_to_tag[i] for i in xrange(n_tags)] + ["Percent"])
-    )
+        *([id_to_tag[i] for i in xrange(n_tags)] + ["Percent"]))
+
     for i in xrange(n_tags):
         print("{: >2}{: >7}{: >7}%s{: >9}" % ("{: >7}" * n_tags)).format(
             str(i), id_to_tag[i], str(count[i].sum()),
             *([count[i][j] for j in xrange(n_tags)] +
-              ["%.3f" % (count[i][i] * 100. / max(1, count[i].sum()))])
-        )
+              ["%.3f" % (count[i][i] * 100. / max(1, count[i].sum()))]))
 
     # Global accuracy
     print "%i/%i (%.5f%%)" % (
-        count.trace(), count.sum(), 100. * count.trace() / max(1, count.sum())
-    )
+        count.trace(), count.sum(), 100. * count.trace() / max(1, count.sum()))
 
     # F1 on all entities
     return float(eval_lines[1].strip().split()[-1])

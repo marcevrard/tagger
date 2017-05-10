@@ -2,7 +2,7 @@
 
 '''
 ./train.py --train dataset/eng.train --dev dataset/eng.testa --test dataset/eng.testb \
-    -p dataset/sskip.100.vectors
+    -p dataset/sskip.100.vectors --scale 0.5
 '''
 
 # pylint: disable=invalid-name
@@ -13,18 +13,17 @@ import os
 from collections import OrderedDict
 
 os.environ["OMP_NUM_THREADS"] = "1"
-
+# pylint: disable=wrong-import-position
 import numpy as np
 
 import loader
 from loader import (augment_with_pretrained, char_mapping, prepare_dataset,
                     tag_mapping, update_tag_scheme, word_mapping)
 from model import Model
-from utils import create_input, eval_script, eval_temp, evaluate, models_path
+from utils import create_input, evaluate, MODELS_PATH, EVAL_SCRIPT
 
 
 N_EPOCHS = 50  # number of epochs over the training set
-
 
 # Read parameters from command line
 optparser = optparse.OptionParser()
@@ -104,6 +103,10 @@ optparser.add_option(
     "-r", "--reload", default="0",
     type='int', help="Reload the last saved model"
 )
+optparser.add_option(
+    "--scale", default=0,
+    type='float', help="Scaling value to change the embeddings std"
+)
 opts = optparser.parse_args()[0]
 
 # Parse parameters
@@ -123,6 +126,7 @@ parameters['cap_dim'] = opts.cap_dim
 parameters['crf'] = opts.crf == 1
 parameters['dropout'] = opts.dropout
 parameters['lr_method'] = opts.lr_method
+parameters['scale'] = opts.scale
 
 # Check parameters validity
 assert os.path.isfile(opts.train)
@@ -136,15 +140,13 @@ assert not parameters['pre_emb'] or parameters['word_dim'] > 0
 assert not parameters['pre_emb'] or os.path.isfile(parameters['pre_emb'])
 
 # Check evaluation script / folders
-if not os.path.isfile(eval_script):
-    raise Exception('CoNLL evaluation script not found at "%s"' % eval_script)
-if not os.path.exists(eval_temp):
-    os.makedirs(eval_temp)
-if not os.path.exists(models_path):
-    os.makedirs(models_path)
+if not os.path.isfile(EVAL_SCRIPT):
+    raise Exception('CoNLL evaluation script not found at "%s"' % EVAL_SCRIPT)
+if not os.path.exists(MODELS_PATH):
+    os.makedirs(MODELS_PATH)
 
 # Initialize model
-model = Model(parameters=parameters, models_path=models_path)
+model = Model(parameters=parameters, models_path=MODELS_PATH)
 print "Model location: %s" % model.model_path
 
 # Data parameters
@@ -212,7 +214,7 @@ if opts.reload:
 #
 singletons = set([word_to_id[k] for k, v
                   in dico_words_train.items() if v == 1])
-freq_eval = len(train_data)  # 1000  # evaluate on dev every freq_eval steps
+freq_eval = 1000 #len(train_data)  # 1000  # evaluate on dev every freq_eval steps
 best_dev = -np.inf
 best_test = -np.inf
 count = 0

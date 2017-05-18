@@ -3,6 +3,14 @@
 '''
 ./train.py --train dataset/eng.train --dev dataset/eng.testa --test dataset/eng.testb \
     -p dataset/sskip.100.vectors --scale 0.5
+
+!! TODO: FIXIT: the original STD of the embeddings need to be inserted manually in models.py !!
+sskip.100.vectors           0.365543
+vectors_big_15_wang.txt     0.443624
+vectors_big_7_words.txt     0.394439
+vectors_glove_big.txt       0.522332
+glove_6B_100d_w2vformat.txt 0.408157
+vectors_big_cbow.txt        1.694500
 '''
 
 # pylint: disable=invalid-name

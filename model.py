@@ -13,7 +13,7 @@ from optimization import Optimization
 from utils import get_name, set_values, shared
 
 
-EMBEDS_STD = 0.36554322
+EMBEDS_STD = 1.694500
 
 
 class Model(object):

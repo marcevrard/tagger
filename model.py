@@ -1,13 +1,14 @@
-import codecs
+from __future__ import absolute_import, division, print_function
+
 import cPickle
 import os
 import re
 
 import numpy as np
 import scipy.io
+
 import theano
 import theano.tensor as T
-
 from nn import LSTM, DropoutLayer, EmbeddingLayer, HiddenLayer, forward
 from optimization import Optimization
 from utils import get_name, set_values, shared
@@ -164,7 +165,7 @@ class Model(object):
             # Initialize with pretrained embeddings
             if pre_emb and training:
                 new_weights = word_layer.embeddings.get_value()
-                print 'Loading pretrained embeddings from %s...' % pre_emb
+                print("Loading pretrained embeddings from {}...".format(pre_emb))
                 # pretrained = {}
                 vec_lst, word_lst = [], []
                 emb_invalid = 0
@@ -181,7 +182,7 @@ class Model(object):
                         except IndexError:
                             emb_invalid += 1
                 if emb_invalid > 1:
-                    print 'WARNING: %i invalid lines' % emb_invalid-1
+                    print("WARNING: {} invalid lines".format(emb_invalid - 1))
                 vec_arr = np.array(vec_lst, dtype=np.float32)
                 pretrained_std = vec_arr.std()
                 if scale == 0:
@@ -210,16 +211,12 @@ class Model(object):
                         ]
                         c_zeros += 1
                 word_layer.embeddings.set_value(new_weights)
-                print 'Loaded %i pretrained embeddings.' % len(pretrained)
-                print ('%i / %i (%.4f%%) words have been initialized with '
-                       'pretrained embeddings.') % (
-                            c_found + c_lower + c_zeros, n_words,
-                            100. * (c_found + c_lower + c_zeros) / n_words
-                      )
-                print ('%i found directly, %i after lowercasing, '
-                       '%i after lowercasing + zero.') % (
-                          c_found, c_lower, c_zeros
-                      )
+                print("Loaded {} pretrained embeddings.".format(len(pretrained)))
+                print("{} / {} ({:.4f}%) words have been initialized with pretrained embeddings."
+                      "".format(c_found + c_lower + c_zeros, n_words,
+                                100. * (c_found + c_lower + c_zeros) / n_words))
+                print("{} found directly, {} after lowercasing, {} after lowercasing + zero."
+                      "".format(c_found, c_lower, c_zeros))
 
         #
         # Chars inputs
@@ -384,7 +381,7 @@ class Model(object):
             lr_method_parameters = {}
 
         # Compile training function
-        print 'Compiling...'
+        print("Compiling...")
         if training:
             updates = Optimization(clip=5.0).get_updates(lr_method_name, cost, params, **lr_method_parameters)
             f_train = theano.function(

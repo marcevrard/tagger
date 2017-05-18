@@ -13,9 +13,6 @@ from optimization import Optimization
 from utils import get_name, set_values, shared
 
 
-EMBEDS_STD = 1.694500
-
-
 class Model(object):
     """
     Network architecture.
@@ -130,12 +127,6 @@ class Model(object):
         """
         Build the network.
         """
-        if scale == 0:
-            scale = EMBEDS_STD
-            print("SCALING OFF:", scale)
-        else:
-            print("SCALING ON!:", scale)
-
         # Training parameters
         n_words = len(self.id_to_word)
         n_chars = len(self.id_to_char)
@@ -174,18 +165,31 @@ class Model(object):
             if pre_emb and training:
                 new_weights = word_layer.embeddings.get_value()
                 print 'Loading pretrained embeddings from %s...' % pre_emb
-                pretrained = {}
+                # pretrained = {}
+                vec_lst, word_lst = [], []
                 emb_invalid = 0
                 for i, line in enumerate(codecs.open(pre_emb, 'r', 'utf-8')):
-                    line = line.rstrip().split()
-                    if len(line) == word_dim + 1:
-                        pretrained[line[0]] = np.array(
-                            [float(x) for x in line[1:]]).astype(np.float32) * scale / EMBEDS_STD
-
+                    word = line.rstrip().split()[0]
+                    vec = line.rstrip().split()[1:]
+                    if len(vec) == word_dim:
+                        word_lst.append(word)
+                        vec_lst.append(vec)
+                        # pretrained[line[0]] = np.array(
+                        #     [float(x) for x in line[1:]]).astype(np.float32) * scale / EMBEDS_STD
                     else:
                         emb_invalid += 1
-                if emb_invalid > 0:
-                    print 'WARNING: %i invalid lines' % emb_invalid
+                if emb_invalid > 1:
+                    print 'WARNING: %i invalid lines' % emb_invalid-1
+                vec_arr = np.array(vec_lst, dtype=np.float32)
+                pretrained_std = vec_arr.std()
+                if scale == 0:
+                    print("SCALING OFF, STD:", pretrained_std)
+                else:
+                    vec_arr = vec_arr * scale / pretrained_std
+                    print("SCALING ON! New STD:", scale)
+
+                pretrained = {wrd: vec for wrd, vec in zip(word_lst, vec_arr)}
+
                 c_found = 0
                 c_lower = 0
                 c_zeros = 0

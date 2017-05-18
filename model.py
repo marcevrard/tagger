@@ -169,14 +169,17 @@ class Model(object):
                 vec_lst, word_lst = [], []
                 emb_invalid = 0
                 for i, line in enumerate(codecs.open(pre_emb, 'r', 'utf-8')):
-                    word = line.rstrip().split()[0]
-                    vec = line.rstrip().split()[1:]
-                    if len(vec) == word_dim:
-                        word_lst.append(word)
-                        vec_lst.append(vec)
-                        # pretrained[line[0]] = np.array(
-                        #     [float(x) for x in line[1:]]).astype(np.float32) * scale / EMBEDS_STD
-                    else:
+                    try:
+                        word = line.rstrip().split()[0]
+                        vec = line.rstrip().split()[1:]
+                        if len(vec) == word_dim:
+                            word_lst.append(word)
+                            vec_lst.append(vec)
+                            # pretrained[line[0]] = np.array(
+                            #     [float(x) for x in line[1:]]).astype(np.float32) * scale / EMBEDS_STD
+                        else:
+                            emb_invalid += 1
+                    except IndexError:
                         emb_invalid += 1
                 if emb_invalid > 1:
                     print 'WARNING: %i invalid lines' % emb_invalid-1
